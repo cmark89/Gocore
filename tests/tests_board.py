@@ -37,6 +37,7 @@ def test_board():
 	b.place_stone(point.Point(2,1), "Black")
 	b.print_board()
 	assert(len(b.stone_groups) == 2)
+	b.print_board()
 	assert(b.board[0][0] == "-")
 	print ("Test 2 passed.")
 

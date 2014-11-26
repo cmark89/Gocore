@@ -6,6 +6,7 @@ import copy
 
 class Board:
 	score = {"Black" : 0, "White" : 0}
+	history = []
 	def __init__(self):
 		self.stone_groups = []
 		self.create_board()
@@ -55,11 +56,17 @@ class Board:
 
 	def is_matching_board(self, other):
 		for x, y in zip(range(0,19), range(0, 19)):
-			if self.board[x][y] != other[x][y]:
+			if self.board[x][y] != other.board[x][y]:
+				print("DEVIATION FOUND")
 				return False
 		else:
 			return True
-					
+				
+	def kou(self):
+		for s in self.history:
+			if self.is_matching_board(s):
+				return True
+		return False
 
 
 	def update_board(self):
@@ -73,15 +80,12 @@ class Board:
 
 	# Returns True if the move is completed legally, False otherwise
 	def place_stone(self, point, owner, simulation=False):
-
-# Currently we need to rearrange this; the order of operations is fine,
-# but we need a new way to check the hypothetical board state before we 
-# commit to it (since reassinging "self" has no effect on the instance 
-# it is being called on).  IDEA: Call it recursively, and have a flag that
-# indicates if we're in the real world or not.
 		if not self.point_is_empty(point):
 			print("SOMETHING ALREADY HERE")
 			return False;
+
+		# Create a copy of the board state for kou tracking
+		original = copy.deepcopy(self)
 
 		# We're in the real world, so we copy the boardstate and 
 		# run a simulation of the move on it
@@ -116,7 +120,6 @@ class Board:
 
 		# Loop through each group owned by this player and see if 
 		# the new stone is in that group's liberties
-		print(str(len(linked_groups)) + " groups to merge with")
 		for group in linked_groups:
 				stones += group.stones
 				self.stone_groups.remove(group)
@@ -132,8 +135,13 @@ class Board:
 			return False #, "Illegal move (no liberties)"
 
 		self.update_board()
-		if self.is_matching_board(self.last_state): 
+		if self.kou(): 
 			print("Illegal move (kou).")
 			return False
 		else:
+			# We made it to the end, and there's no kou;
+			# Save the original board state of this turn to the history
+			self.history.append(original)
+			#if len(self.history) > 2:
+				#self.history = self.history[len(self.history) - 2:]
 			return True
