@@ -134,11 +134,6 @@ class Board:
 			return False #, "Illegal move (no liberties)"
 
 		self.update_board()
-		if self.kou(): 
-			print("Illegal move (kou).")
-			return False
-		else:
-			# After a move is successfully completed, the server should
-			# append the new state to the history
 
-			return True
+		# TODO: Kou check
+		return True

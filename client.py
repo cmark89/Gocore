@@ -2,38 +2,41 @@
 
 import socket
 import pickle
+import threading
 
 rows = "ABCDEFGHIJKLMNOPQRS"
 columns = range(1,20)
-color = ""
-
 
 class Client:
-	def __init__(self):
-		pass
+	color = ""
+	headless = False
+
+	def __init__(self, is_headless=False):
+		self.headless = is_headless
+		
 
 	def connect(self, hostname, port):
 		self.socket = socket.socket()
-		try:
-			self.socket.connect((hostname, port))
-		except:
-			pass
-		else:
-			# Enter the main client loop
-			self.main_loop()
+		self.socket.connect((hostname, port))
+		# Enter the main client loop
+		t = threading.Thread(target=self.main_loop)
+		t.start()
 
 	def main_loop(self):
 		# Try to read a value from the server and then act on it
-		message = self.socket.recv(1024).decode('utf-8')
-		self.parse_message(message)
+		while True:
+			print("Await signal")
+			message = self.socket.recv(1024).decode('utf-8')
+			self.parse_message(message)
 
 	def parse_message(self, message):
+		print("Client received message: " + str(message))
 		if message[0] == "S":
 			# The server is sending setup info
 			if message[1] == "B":
-				color = "Black"
+				self.color = "Black"
 			elif message[1] == "W":
-				color = "White"
+				self.color = "White"
 
 		if message[0] == "B":
 			# The server is sending an updated board state
@@ -41,7 +44,10 @@ class Client:
 			self.board = pickle.loads(raw_board)
 		elif message[0] == "T":
 			# The server says that it is our turn
-			prompt_turn()
+			if not self.headless:
+				self.prompt_turn()
+			else:
+				return
 		elif message[0] == "E":
 			# The server says that the game is over
 			pass
@@ -62,7 +68,16 @@ class Client:
 				break
 
 	def send_message_to_server(self, message):
-		self.socket.send(str.encode(self.input_to_point(space)))
+		# Prepend the first letter of our color to the message
+		message = self.color[0] + message
+		print("Client: Send message " + str(message))
+		if(message[1] == "M"):
+			full_message = message[0:2] + self.input_to_point(message[2:])
+			print("Client: Send move message: " + full_message)
+			self.socket.send(str.encode(full_message))
+				
+		else:
+			self.socket.send(str.encode(message))
 	
 	def input_to_point(self, space):
 		x = 0
@@ -72,8 +87,6 @@ class Client:
 			if space[0] == rows[index]:
 				y = index + 1
 		return str(x) + "-" + str(y)
-
-
 
 	def is_valid_space(self, space):
 		# Here we check the space input for validity and that space

@@ -23,12 +23,14 @@ class GocoreServer:
 		# Bind a socket to the given port and launch the 
 		# connection thread
 		s = socket.socket()
-		self.socket = s
 		s.bind((self.hostname, int(self.port)))
-		s.listen(2)
+		s.listen(10)
 		while(len(self.clients) < 2):
+			print("Server: Awaiting connections")
 			c_socket, addr = s.accept()
 			self.on_connection(c_socket, addr)
+			print("Server: Has %s clients" % (str(len(self.clients))))
+		print("2 clients connected; initiate main loop")
 		self.main_loop()
 
 	def on_connection(self, client_socket, addr):
@@ -36,6 +38,7 @@ class GocoreServer:
 
 	def main_loop(self):
 		# Begin the game!
+		print("Server: initiate main loop")
 
 		# Choose a player to be player one
 		self.send(0, "SB")
@@ -45,15 +48,34 @@ class GocoreServer:
 		while True:
 			index = turn % 2
 			# Tell this player whose turn it is
+			print("Server send \"T\" to " + str(index))
 			self.clients[index].send(str.encode("T"))
 
 			# Wait for input
-			self.socket.recv(1024).decode('utf-8')
+			sig = self.clients[index].recv(1024).decode('utf-8')
+			print("SERVER GET SIGNAL: " + sig)
+			self.process_signal(sig)
 
+			turn += 1
+
+	def process_signal(self, sig):
+		owner = ""
+		if sig[0] == "B":
+			owner = "Black"
+		elif sig[0] == "W":
+			owner = "White"
+
+		if sig[1] == "M":	# Making a move
+			print("Server receiving move order")
+			sig = sig[2:]
+			self.make_move(Point(int(sig[0]), int(sig[2])), owner)
+			
 	
 	def make_move(self, point, player):
-		board.place_stone(point, player)
-		board.history.append(board.board[:])
+		print("Server play stone at point %s,%s for %s" %
+			(point.x, point.y, player))
+		self.board.place_stone(point, player)
+		self.board.history.append(copy.deepcopy(self.board.board))
 
 	def send(self, client, message):
 		self.clients[client].send(str.encode(message))	
