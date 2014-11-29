@@ -3,13 +3,16 @@
 import socket
 import pickle
 import threading
+from point import Point
+from board import Board
 
-rows = "ABCDEFGHIJKLMNOPQRS"
-columns = range(1,20)
+columns = "ABCDEFGHIJKLMNOPQRS"
+rows = range(1,20)
 
 class Client:
 	color = ""
 	headless = False
+	board = Board()
 
 	def __init__(self, is_headless=False):
 		self.headless = is_headless
@@ -38,10 +41,16 @@ class Client:
 			elif message[1] == "W":
 				self.color = "White"
 
-		if message[0] == "B":
-			# The server is sending an updated board state
-			raw_board = self.socket.read(1024)
-			self.board = pickle.loads(raw_board)
+		if message[0] == "U":
+			# The server is sending an update from the other player
+			updater = ""
+			if(self.color == "Black"):
+				updater = "White"
+			else:
+				updater = "Black"
+			print("UPDATE MESSAGE: " + message)
+			point = Point(int(message[1]), int(message[3:]))
+			self.board.place_stone(point, updater)
 		elif message[0] == "T":
 			# The server says that it is our turn
 			if not self.headless:
@@ -78,14 +87,22 @@ class Client:
 				
 		else:
 			self.socket.send(str.encode(message))
+
+	def place_stone(self, point):
+		if self.board.place_stone(point, self.color):
+			# Tell the server we placed the stone
+			message = self.color[0] + "M" + input_to_point\
+				(point.x, point.y)
+			self.send_message_to_server(message)
+		
 	
 	def input_to_point(self, space):
 		x = 0
 		y = 0
-		x = space[1]
-		for index, row in enumerate(rows):
-			if space[0] == rows[index]:
-				y = index + 1
+		y = space[1:]
+		for index, row in enumerate(columns):
+			if space[0] == columns[index]:
+				x = index + 1
 		return str(x) + "-" + str(y)
 
 	def is_valid_space(self, space):

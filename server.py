@@ -4,6 +4,7 @@ import socket
 from board import *
 from point import *
 import threading
+import pickle
 
 class GocoreServer:
 	board = Board()
@@ -47,6 +48,7 @@ class GocoreServer:
 		turn = 0
 		while True:
 			index = turn % 2
+
 			# Tell this player whose turn it is
 			print("Server send \"T\" to " + str(index))
 			self.clients[index].send(str.encode("T"))
@@ -60,16 +62,20 @@ class GocoreServer:
 
 	def process_signal(self, sig):
 		owner = ""
+		owner_index = 0
 		if sig[0] == "B":
 			owner = "Black"
 		elif sig[0] == "W":
 			owner = "White"
+			owner_index = 1
 
 		if sig[1] == "M":	# Making a move
 			print("Server receiving move order")
 			sig = sig[2:]
-			self.make_move(Point(int(sig[0]), int(sig[2])), owner)
-			
+			self.make_move(Point(int(sig[0]), int(sig[2:])), owner)
+			# Now tell the non-sending client to make the same move
+			self.clients[(owner_index + 1) % 2].send\
+				(str.encode("U"+sig[0] + "-" + sig[2:]))
 	
 	def make_move(self, point, player):
 		print("Server play stone at point %s,%s for %s" %

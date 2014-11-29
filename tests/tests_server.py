@@ -12,6 +12,7 @@ def test_server():
 	server = GocoreServer(socket.gethostname(), port)
 	server.start()
 	print("Server started successfully.")
+	time.sleep(1)
 
 	# Start the clients headless so they don't freeze awaiting input
 	black = Client(True)
@@ -27,9 +28,15 @@ def test_server():
 	time.sleep(1)
 	white.send_message_to_server("MA2")
 	time.sleep(1)
-	black.send_message_to_server("MG7")
+	black.send_message_to_server("MG17")
 	time.sleep(1)
 	white.send_message_to_server("MB1")
 	time.sleep(1)
 
 	server.board.print_board()
+
+	print("\nBLACK BOARD: ")
+	black.board.print_board()
+
+	print("\nWHITE BOARD: ")
+	white.board.print_board()
