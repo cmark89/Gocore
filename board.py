@@ -36,7 +36,7 @@ class Board:
 
 
 	def point_is_empty(self, point):
-		return self.board[point.x-1][point.y-1] == '-'
+		return self.board[int(point.x)-1][int(point.y)-1] == '-'
 	
 
 	def get_adjacent_points(self, point):

@@ -24,13 +24,13 @@ def test_server():
 	print("White connected successfully")
 
 	time.sleep(1)
-	black.send_message_to_server("MA1")
+	black.place_stone("A1")
 	time.sleep(1)
-	white.send_message_to_server("MA2")
+	white.place_stone("A2")
 	time.sleep(1)
-	black.send_message_to_server("MG17")
+	black.place_stone("G17")
 	time.sleep(1)
-	white.send_message_to_server("MB1")
+	white.place_stone("B1")
 	time.sleep(1)
 
 	server.board.print_board()

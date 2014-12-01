@@ -88,13 +88,16 @@ class Client:
 		else:
 			self.socket.send(str.encode(message))
 
-	def place_stone(self, point):
+	def place_stone(self, point_raw):
+		point = self.coord_to_point(point_raw)
 		if self.board.place_stone(point, self.color):
 			# Tell the server we placed the stone
-			message = self.color[0] + "M" + input_to_point\
-				(point.x, point.y)
+			message = "M" + point_raw
 			self.send_message_to_server(message)
-		
+
+	def coord_to_point(self, point_raw):	
+		translated = self.input_to_point(point_raw).split('-')
+		return Point(int(translated[0]), int(translated[1]))
 	
 	def input_to_point(self, space):
 		x = 0
@@ -104,6 +107,7 @@ class Client:
 			if space[0] == columns[index]:
 				x = index + 1
 		return str(x) + "-" + str(y)
+
 
 	def is_valid_space(self, space):
 		# Here we check the space input for validity and that space
