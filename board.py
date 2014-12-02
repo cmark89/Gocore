@@ -3,6 +3,7 @@ from stone import *
 from point import *
 from stoneGroup import *
 import copy
+from random import randint
 
 class Board:
 	score = {"Black" : 0, "White" : 0}
@@ -28,7 +29,11 @@ class Board:
 
 
 	def print_board(self):
+		columns = "ABCDEFGHIJKLMNOPQRS"
+		print("   " + (" ".join(columns)))
 		for y in range(0,19):
+			row = str(y+1) 
+			print(row + ((3 - len(row))*' '), end="")
 			for x in range(0, 19):
 				last = " "
 				if x == 18: last = "\n"
@@ -137,3 +142,66 @@ class Board:
 
 		# TODO: Kou check
 		return True
+
+	def score_game(self):
+		# We need to do random fills until we've visited each point
+		all_points = [(x,y) for x in range(0,19) for y in range(0,19)]
+		unvisited = []
+		for p in all_points:
+			if self.board[p[0]][p[1]] == "-":
+				unvisited.append((p[0], p[1]))	
+
+		# We now have a list of all empty points on the board
+		while len(unvisited) > 0:
+			
+			# Choose a random point to expand from
+			active_list = []
+			index = randint(0, len(unvisited)-1)
+			active_list.append(unvisited[index])
+			visited = []
+			del unvisited[index]
+			stones = []
+			while len(active_list) > 0:
+				index = randint(0, len(active_list)-1)
+				current_point = active_list	[index]
+				visited.append(active_list[index])
+				del active_list[index]
+				
+				# Get the neighbors and add them to the active list
+				steps = [[1, 1], [1, -1], [-1, 1], [-1, -1]]
+				for s in steps:
+					new_point = (int(current_point[0]+s[0]), \
+								 int(current_point[1]+s[1]))
+					if tuple(new_point) in all_points:
+						if self.board[new_point[0]][new_point[1]] == "-":
+							print("EMPTY SPACE")
+							active_list.append((new_point[0],new_point[1]))
+							visited.append(current_point)
+							for index, x in enumerate(unvisited):
+								if x == (new_point[0], new_point[1]):
+									del unvisited[index]
+						else:
+							stones.append(new_point)
+							print("FOUND A STONE")
+
+			# We've filled the area; check to see who owns it
+			print("THIS FILL HAS FOUND " + str(len(stones)) + " STONES")
+			owner = self.board[stones[0]][stones[1]]
+			owner_name = ""
+			for s in stones:
+				if s != owner:
+					# Dame point
+					owner = "+"
+					owner_name = "Dame"
+					break
+			if owner != "+":
+				if owner == "X":
+					owner_name = "Black"
+				elif owner == "O":
+					owner_name = "White"
+
+				for s in visited:
+					self.board[s.x][s.y] = owner
+					self.score[owner_name] += 1
+		print("\n" * 100)
+		self.print_board()

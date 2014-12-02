@@ -59,7 +59,17 @@ class Client:
 				return
 		elif message[0] == "E":
 			# The server says that the game is over
-			pass
+			self.socket.close()
+			self.board.score_game()
+			if self.board.score[0] > self.board.score[1]:
+				winner = self.board.score.keys[0]
+			else:
+				winner = self.board.score.keys[1]
+			if winner == self.color:
+				print("===WINNER!!!===")
+			else:
+				print("===LOSER!!!===")
+
 		elif message[0] == "X":
 			# The message is sending an error
 			pass
@@ -72,9 +82,15 @@ class Client:
 			print("Choose a space.  Enter nothing to pass.")
 			print(self.error)
 			space = input("> ")
-			if len(space.trim()) == 0 or is_valid_space(space):
-				self.send_message_to_server(space)
+			if is_valid_space(space):
+				self.place_stone(space)
 				break
+			elif len(space) == 0:
+				self.pass_turn()
+				break
+
+	def pass_turn(self):
+		self.send_message_to_server("P")
 
 	def send_message_to_server(self, message):
 		# Prepend the first letter of our color to the message
@@ -94,6 +110,8 @@ class Client:
 			# Tell the server we placed the stone
 			message = "M" + point_raw
 			self.send_message_to_server(message)
+		else: 
+			print("Invalid point.")
 
 	def coord_to_point(self, point_raw):	
 		translated = self.input_to_point(point_raw).split('-')

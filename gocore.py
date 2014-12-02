@@ -26,7 +26,6 @@ Please enter a command:
 %s
 
 """ % (version_string, error))
-
 def host_game():
 	port = input("Please select a port to host on: ")
 	# Start a server on that port and then connect

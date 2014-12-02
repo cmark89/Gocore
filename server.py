@@ -71,11 +71,29 @@ class GocoreServer:
 
 		if sig[1] == "M":	# Making a move
 			print("Server receiving move order")
+			self.pass_count = 0
 			sig = sig[2:]
 			self.make_move(Point(int(sig[0]), int(sig[2:])), owner)
 			# Now tell the non-sending client to make the same move
 			self.clients[(owner_index + 1) % 2].send\
 				(str.encode("U"+sig[0] + "-" + sig[2:]))
+		if sig[1] == "P":
+			print("Player passes.")
+			self.pass_count += 1
+			if self.pass_count >= 2:
+				self.end_game()
+
+	def end_game(self):
+		# Send the end message to the players
+		self.send(0, "E")
+		self.send(1, "E")
+		# Shut down the connections
+		for c in self.clients:
+			c.close()
+		
+		# Score the board, just for fun
+		self.board.score_game()
+
 	
 	def make_move(self, point, player):
 		print("Server play stone at point %s,%s for %s" %
