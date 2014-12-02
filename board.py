@@ -179,6 +179,8 @@ class Board:
 							visited.append(current_point)
 							for index, x in enumerate(unvisited):
 								if x == (new_point[0], new_point[1]):
+									print("Delete from unvisited: %s,%s" % \
+										(new_point[0], new_point[1]))
 									del unvisited[index]
 						else:
 							stones.append(new_point)
