@@ -29,12 +29,12 @@ class Client:
 		# Try to read a value from the server and then act on it
 		self.playing = True
 		while self.playing:
-			print("Await signal")
+			#print("Await signal")
 			message = self.socket.recv(1024).decode('utf-8')
 			self.parse_message(message)
 
 	def parse_message(self, message):
-		print("Client received message: " + str(message))
+		#print("Client received message: " + str(message))
 		if message[0] == "S":
 			# The server is sending setup info
 			if message[1] == "B":
@@ -49,7 +49,7 @@ class Client:
 				updater = "White"
 			else:
 				updater = "Black"
-			print("UPDATE MESSAGE: " + message)
+			#print("UPDATE MESSAGE: " + message)
 			point = Point(int(message[1]), int(message[3:]))
 			self.board.place_stone(point, updater)
 		elif message[0] == "T":
@@ -96,10 +96,10 @@ class Client:
 	def send_message_to_server(self, message):
 		# Prepend the first letter of our color to the message
 		message = self.color[0] + message
-		print("Client: Send message " + str(message))
+		#print("Client: Send message " + str(message))
 		if(message[1] == "M"):
 			full_message = message[0:2] + self.input_to_point(message[2:])
-			print("Client: Send move message: " + full_message)
+			#print("Client: Send move message: " + full_message)
 			self.socket.send(str.encode(full_message))
 				
 		else:

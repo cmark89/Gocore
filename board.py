@@ -57,12 +57,12 @@ class Board:
 
 	def is_matching_board(self, other):
 		for x, y in zip(range(0,19), range(0, 19)):
-			print("COMPARE " + self.board[x][y] + \
-				" : " + other[x][y])
+			#print("COMPARE " + self.board[x][y] + \
+				#" : " + other[x][y])
 			if self.board[x][y] != other[x][y]:
-				print("Difference found; unidentical board")
+				#print("Difference found; unidentical board")
 				return False
-		print("Identical board")
+		#print("Identical board")
 		return True
 				
 	def kou(self):
@@ -136,7 +136,7 @@ class Board:
 		# Check to see if the new group has any liberties
 		# (Check after removing captures because it may create liberties)
 		if len(newGroup.liberties) == 0:
-			print("No liberties!  Cannot add.")
+			#print("No liberties!  Cannot add.")
 			return False #, "Illegal move (no liberties)"
 
 		self.update_board()
@@ -145,7 +145,7 @@ class Board:
 		return True
 
 	def score_game(self):
-		print("SCORE THE GAME!!!!!")
+		#print("SCORE THE GAME!!!!!")
 		# We need to do random fills until we've visited each point
 		all_points = [(x,y) for x in range(0,19) for y in range(0,19)]
 		unvisited = []
