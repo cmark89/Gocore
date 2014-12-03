@@ -4,6 +4,7 @@ import client
 import socket
 from server import GocoreServer
 from client import Client
+from board import Board
 from random import randint
 import time
 
@@ -64,12 +65,23 @@ def test_server():
 	white.place_stone("G4")
 	wait()
 
+	print("Scores:")
+	print("Black: %s --- White: %s" % (server.board.score["Black"], \
+		server.board.score["White"]))
 	black.pass_turn()
+	print("\n" * 3)
 	white.pass_turn()
-	server.board.print_board()
+	#server.board.print_board()
 
-	print("\nBLACK BOARD: ")
-	black.board.print_board()
+	#print("\nBLACK BOARD: ")
+	#black.board.print_board()
 
 	print("\nWHITE BOARD: ")
-	white.board.print_board()
+	wait()
+	assert(white.board.score["Black"] == 3)
+	assert(black.board.score["Black"] == 3)
+	assert(white.board.score["White"] == Board.komi + 1)
+	assert(black.board.score["White"] == Board.komi + 1)
+	print('\n' * 4)
+	print("Server / client tests passed.")
+

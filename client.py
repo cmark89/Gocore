@@ -27,7 +27,8 @@ class Client:
 
 	def main_loop(self):
 		# Try to read a value from the server and then act on it
-		while True:
+		self.playing = True
+		while self.playing:
 			print("Await signal")
 			message = self.socket.recv(1024).decode('utf-8')
 			self.parse_message(message)
@@ -57,19 +58,19 @@ class Client:
 				self.prompt_turn()
 			else:
 				return
-		elif message[0] == "E":
+		elif message[0] == "E" and self.playing:
+			self.playing = False
 			# The server says that the game is over
 			self.socket.close()
 			self.board.score_game()
-			if self.board.score[0] > self.board.score[1]:
-				winner = self.board.score.keys[0]
-			else:
-				winner = self.board.score.keys[1]
-			if winner == self.color:
+			winner = self.board.get_winning_player()
+			if winner[0] == self.color:
 				print("===WINNER!!!===")
 			else:
 				print("===LOSER!!!===")
-
+			print("\tBlack: %s\tWhite: %s"%\
+				(self.board.score["Black"], str(float(self.board.score\
+				["White"]))))
 		elif message[0] == "X":
 			# The message is sending an error
 			pass

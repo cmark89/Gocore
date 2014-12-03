@@ -46,7 +46,8 @@ class GocoreServer:
 		self.send(1, "SW")
 
 		turn = 0
-		while True:
+		self.playing = True
+		while self.playing:
 			index = turn % 2
 
 			# Tell this player whose turn it is
@@ -84,6 +85,7 @@ class GocoreServer:
 				self.end_game()
 
 	def end_game(self):
+		self.playing = False
 		# Send the end message to the players
 		self.send(0, "E")
 		self.send(1, "E")

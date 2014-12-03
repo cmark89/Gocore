@@ -6,9 +6,10 @@ import copy
 from random import randint
 
 class Board:
-	score = {"Black" : 0, "White" : 0}
+	komi = 6.5
 	history = []
 	def __init__(self):
+		self.score = {"Black" : 0, "White" : Board.komi}
 		self.stone_groups = []
 		self.create_board()
 	
@@ -144,6 +145,7 @@ class Board:
 		return True
 
 	def score_game(self):
+		print("SCORE THE GAME!!!!!")
 		# We need to do random fills until we've visited each point
 		all_points = [(x,y) for x in range(0,19) for y in range(0,19)]
 		unvisited = []
@@ -164,32 +166,47 @@ class Board:
 			while len(active_list) > 0:
 				index = randint(0, len(active_list)-1)
 				current_point = active_list	[index]
-				visited.append(active_list[index])
+				visited.append(current_point)
 				del active_list[index]
-				
+				for index, x in enumerate(unvisited):
+					if x == (current_point[0], current_point[1]):
+						#print("Delete from unvisited: %s,%s" % \
+							#(current_point[0], current_point[1]))
+						del unvisited[index]
+									
 				# Get the neighbors and add them to the active list
-				steps = [[1, 1], [1, -1], [-1, 1], [-1, -1]]
+				steps = [[1, 0], [-1, 0], [0, 1], [0, -1]]
 				for s in steps:
 					new_point = (int(current_point[0]+s[0]), \
 								 int(current_point[1]+s[1]))
-					if tuple(new_point) in all_points:
-						if self.board[new_point[0]][new_point[1]] == "-":
-							print("EMPTY SPACE")
-							active_list.append((new_point[0],new_point[1]))
-							visited.append(current_point)
-							for index, x in enumerate(unvisited):
-								if x == (new_point[0], new_point[1]):
-									del unvisited[index]
+					if new_point not in visited and new_point in all_points:
+						if self.board[new_point[0]][new_point[1]]\
+							not in ["X", "O"]:
+							#print("EMPTY SPACE")
+							visited.append(new_point)
+							active_list.append(new_point)
 						else:
-							stones.append(new_point)
-							print("FOUND A STONE")
+							if new_point not in stones:
+								stones.append(new_point)
+								#print("FOUND A STONE AT %s,%s" % new_point)
+					else:
+						pass
+						#print("POINT %s %s has been visited"%new_point)
 
 			# We've filled the area; check to see who owns it
-			print("THIS FILL HAS FOUND " + str(len(stones)) + " STONES")
-			owner = self.board[stones[0]][stones[1]]
+			#print("THIS FILL HAS FOUND " + str(len(stones)) + " STONES")
+
+			# CHECK TO SEE IF THIS IS WHERE IT GOES WACKY
+			#self.print_board()
+			#print("\n" * 3)
+
+			if len(stones) == 0: continue
+
+			owner = self.board[stones[0][0]][stones[0][1]]
+			#print("Cluster root symbol is " + owner)
 			owner_name = ""
 			for s in stones:
-				if s != owner:
+				if self.board[s[0]][s[1]] != owner:
 					# Dame point
 					owner = "+"
 					owner_name = "Dame"
@@ -200,8 +217,22 @@ class Board:
 				elif owner == "O":
 					owner_name = "White"
 
-				for s in visited:
-					self.board[s.x][s.y] = owner
-					self.score[owner_name] += 1
-		print("\n" * 100)
-		self.print_board()
+				#print("OWNER OF THIS CLUSTER IS " + owner_name)
+			for s in set(visited):
+				if self.board[s[0]][s[1]] == "-":
+					self.board[s[0]][s[1]] = owner_name[0]
+					if owner_name != "Dame":
+						self.score[owner_name] += 1
+
+
+	def get_winning_player(self):
+		highest_player=""
+		highest_score=0
+
+		for key in self.score:
+			if self.score[key] > highest_score:
+				highest_player = key
+				highest_score = self.score[key]
+
+		return highest_player, highest_score
+			
