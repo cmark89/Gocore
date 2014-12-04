@@ -6,14 +6,14 @@ from point import *
 import threading
 import pickle
 
-class GocoreServer:
+class Server:
 	board = Board()
 	clients = []
 	pass_count = 0
 
 	def __init__(self, hostname, port):
-		self.hostname = hostname
-		self.port = port
+		self.hostname = socket.gethostbyname(socket.gethostname())
+		self.port = int(port)
 
 	def start(self):
 		t = threading.Thread(target=self.__start)
@@ -96,13 +96,13 @@ class GocoreServer:
 		# Score the board, just for fun
 		self.board.score_game()
 
-	
+
 	def make_move(self, point, player):
 		print("Server play stone at point %s,%s for %s" %
 			(point.x, point.y, player))
 		self.board.place_stone(point, player)
 		self.board.history.append(copy.deepcopy(self.board.board))
 
+
 	def send(self, client, message):
 		self.clients[client].send(str.encode(message))	
-		

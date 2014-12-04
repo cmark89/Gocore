@@ -20,7 +20,7 @@ class Client:
 
 	def connect(self, hostname, port):
 		self.socket = socket.socket()
-		self.socket.connect((hostname, port))
+		self.socket.connect((hostname, int(port)))
 		# Enter the main client loop
 		t = threading.Thread(target=self.main_loop)
 		t.start()
