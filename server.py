@@ -3,6 +3,7 @@
 import socket
 from board import *
 from point import *
+import time
 import threading
 import pickle
 
@@ -13,6 +14,7 @@ class Server:
 
 	def __init__(self, hostname, port):
 		self.hostname = socket.gethostbyname(socket.gethostname())
+		print("Start server as " + self.hostname)
 		self.port = int(port)
 
 	def start(self):
@@ -25,13 +27,11 @@ class Server:
 		# connection thread
 		s = socket.socket()
 		s.bind((self.hostname, int(self.port)))
-		s.listen(10)
+		s.listen(2)
+		print("Server: Awaiting connections")
 		while(len(self.clients) < 2):
-			print("Server: Awaiting connections")
 			c_socket, addr = s.accept()
 			self.on_connection(c_socket, addr)
-			print("Server: Has %s clients" % (str(len(self.clients))))
-		print("2 clients connected; initiate main loop")
 		self.main_loop()
 
 	def on_connection(self, client_socket, addr):
@@ -39,11 +39,12 @@ class Server:
 
 	def main_loop(self):
 		# Begin the game!
-		print("Server: initiate main loop")
+		#print("Server: initiate main loop")
 
 		# Choose a player to be player one
 		self.send(0, "SB")
 		self.send(1, "SW")
+		time.sleep(.35)
 
 		turn = 0
 		self.playing = True
@@ -51,15 +52,16 @@ class Server:
 			index = turn % 2
 
 			# Tell this player whose turn it is
-			print("Server send \"T\" to " + str(index))
+			#print("Server send \"T\" to " + str(index))
 			self.clients[index].send(str.encode("T"))
 
 			# Wait for input
 			sig = self.clients[index].recv(1024).decode('utf-8')
-			print("SERVER GET SIGNAL: " + sig)
+			#print("SERVER GET SIGNAL: " + sig)
 			self.process_signal(sig)
 
 			turn += 1
+			time.sleep(1)
 
 	def process_signal(self, sig):
 		owner = ""
@@ -71,15 +73,15 @@ class Server:
 			owner_index = 1
 
 		if sig[1] == "M":	# Making a move
-			print("Server receiving move order")
+			#print("Server receiving move order")
 			self.pass_count = 0
-			sig = sig[2:]
-			self.make_move(Point(int(sig[0]), int(sig[2:])), owner)
+			sig = sig[2:].split('-')
+			self.make_move(Point(int(sig[0]), int(sig[1])), owner)
 			# Now tell the non-sending client to make the same move
 			self.clients[(owner_index + 1) % 2].send\
-				(str.encode("U"+sig[0] + "-" + sig[2:]))
+				(str.encode("U"+sig[0] + "-" + sig[1]))
 		if sig[1] == "P":
-			print("Player passes.")
+			#print("Player passes.")
 			self.pass_count += 1
 			if self.pass_count >= 2:
 				self.end_game()
@@ -98,8 +100,8 @@ class Server:
 
 
 	def make_move(self, point, player):
-		print("Server play stone at point %s,%s for %s" %
-			(point.x, point.y, player))
+		#print("Server play stone at point %s,%s for %s" %
+#			(point.x, point.y, player))
 		self.board.place_stone(point, player)
 		self.board.history.append(copy.deepcopy(self.board.board))
 

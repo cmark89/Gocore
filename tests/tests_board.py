@@ -47,6 +47,9 @@ def test_board():
 	b.print_board()
 	print(len(b.stone_groups))
 	assert(len(b.stone_groups) == 1)
+	print (str(len(b.stone_groups[0].liberties)) + " liberties")
+	print(b.stone_groups[0].liberties)
+	assert(len(b.stone_groups[0].liberties) == 5)
 	print("Test 3 passed.")
 
 	# PHASE 4 - Test no-liberty move legality
@@ -65,18 +68,16 @@ def test_board():
 	b.print_board()
 	print("Test 5 passed")
 
-	# PHASE 6 - Kou
-	print("Test 6: Kou")
-	b.place_stone(point.Point(10,14), "White")
-	b.place_stone(point.Point(9,15), "White")
-	b.place_stone(point.Point(10,16), "White")
-	b.place_stone(point.Point(11,15), "White")
-	b.place_stone(point.Point(11,14), "Black")
-	b.place_stone(point.Point(12,15), "Black")
-	b.place_stone(point.Point(11,16), "Black")
-
-	assert(b.place_stone(point.Point(10,15), "Black"))	# Takes white's stone
+	# PHASE 6 - Group Captures
+	print("Test 6: Group Captures")
+	b.place_stone(point.Point(3,1), "White") 
+	b.place_stone(point.Point(3,2), "White") 
+	b.place_stone(point.Point(1,3), "White") 
+	b.place_stone(point.Point(2,3), "White") 
 	b.print_board()
-	assert(not b.place_stone(point.Point(11,15), "White")) #KOH!
-	b.print_board()
+	print(str(len(b.stone_groups)) + " groups")
+	print(b.stone_groups[0].liberties)
+	print(b.stone_groups[1].liberties)
+	print(b.stone_groups[2].liberties)
+	assert(b.board[0][0] == "-")
 	print("Test 6 passed")

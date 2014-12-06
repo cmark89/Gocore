@@ -30,6 +30,8 @@ class Board:
 
 
 	def print_board(self):
+		print("\tBlack: %s\t\tWhite: %s" %
+			(str(float(self.score["Black"])), str(float(self.score["White"]))))
 		columns = "ABCDEFGHIJKLMNOPQRS"
 		print("   " + (" ".join(columns)))
 		for y in range(0,19):
@@ -104,9 +106,8 @@ class Board:
 		linked_groups = [] 
 		# Update each group, removing this point from liberties for group in self.stone_groups:
 		for group in self.stone_groups:
-			for l in list(filter(lambda p: p.x == point.x and p.y == point.y, \
-				group.liberties)):
-				group.liberties.remove(l)
+			if point in group.liberties:
+				group.liberties.remove(point)
 				if group.owner == owner:
 					linked_groups.append(group)
 
@@ -136,7 +137,7 @@ class Board:
 		# Check to see if the new group has any liberties
 		# (Check after removing captures because it may create liberties)
 		if len(newGroup.liberties) == 0:
-			#print("No liberties!  Cannot add.")
+			print("No liberties!  Cannot add.")
 			return False #, "Illegal move (no liberties)"
 
 		self.update_board()
@@ -223,6 +224,14 @@ class Board:
 					self.board[s[0]][s[1]] = owner_name[0]
 					if owner_name != "Dame":
 						self.score[owner_name] += 1
+
+		#VERY END
+		for p in [(x,y) for x in range(0,19) for y in range(0,19)]:
+			symbol = ""
+			if self.board[p[0]][p[1]] in ["D","+"]: symbol = "+"
+			if self.board[p[0]][p[1]] in ["B","X"]: symbol = "X"
+			if self.board[p[0]][p[1]] in ["W","O"]: symbol = "O"
+			self.board[p[0]][p[1]] = symbol
 
 
 	def get_winning_player(self):

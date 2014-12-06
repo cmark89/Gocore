@@ -29,7 +29,7 @@ class Client:
 		# Try to read a value from the server and then act on it
 		self.playing = True
 		while self.playing:
-			#print("Await signal")
+			#print("Client: Await signal")
 			message = self.socket.recv(1024).decode('utf-8')
 			self.parse_message(message)
 
@@ -41,6 +41,8 @@ class Client:
 				self.color = "Black"
 			elif message[1] == "W":
 				self.color = "White"
+			print('\n' * 100)
+			self.board.print_board()
 
 		if message[0] == "U":
 			# The server is sending an update from the other player
@@ -50,11 +52,14 @@ class Client:
 			else:
 				updater = "Black"
 			#print("UPDATE MESSAGE: " + message)
-			point = Point(int(message[1]), int(message[3:]))
+			parts = message[1:].split("-")
+			point = Point(int(parts[0]), int(parts[1]))
 			self.board.place_stone(point, updater)
+			#print("Update: Stone at: " + str(point.x) + "," + str(point.y))
 		elif message[0] == "T":
 			# The server says that it is our turn
 			if not self.headless:
+#				print("Prompt turn")
 				self.prompt_turn()
 			else:
 				return
@@ -65,12 +70,10 @@ class Client:
 			self.board.score_game()
 			winner = self.board.get_winning_player()
 			if winner[0] == self.color:
-				print("===WINNER!!!===")
+				print("===YOU WIN!===")
 			else:
-				print("===LOSER!!!===")
-			print("\tBlack: %s\tWhite: %s"%\
-				(self.board.score["Black"], str(float(self.board.score\
-				["White"]))))
+				print("===YOU LOSE!===")
+			self.board.print_board()
 		elif message[0] == "X":
 			# The message is sending an error
 			pass
@@ -79,19 +82,22 @@ class Client:
 		self.error = ""
 		while True:
 			# Print the board state
+			print('\n' * 100)
 			self.board.print_board()
 			print("Choose a space.  Enter nothing to pass.")
 			print(self.error)
 			space = input("> ")
-			if is_valid_space(space):
-				self.place_stone(space)
+			if len(space) == 0:
+				self.pass_turn()	
 				break
-			elif len(space) == 0:
-				self.pass_turn()
+			elif self.is_valid_space(space):
+				self.place_stone(space)
 				break
 
 	def pass_turn(self):
 		self.send_message_to_server("P")
+		print('\n' * 100)
+		self.board.print_board()
 
 	def send_message_to_server(self, message):
 		# Prepend the first letter of our color to the message
@@ -100,6 +106,7 @@ class Client:
 		if(message[1] == "M"):
 			full_message = message[0:2] + self.input_to_point(message[2:])
 			#print("Client: Send move message: " + full_message)
+			print("TO SERVER: " + full_message)
 			self.socket.send(str.encode(full_message))
 				
 		else:
@@ -111,6 +118,8 @@ class Client:
 			# Tell the server we placed the stone
 			message = "M" + point_raw
 			self.send_message_to_server(message)
+			print("\n" * 100)
+			self.board.print_board()
 		else: 
 			print("Invalid point.")
 
@@ -131,7 +140,7 @@ class Client:
 	def is_valid_space(self, space):
 		# Here we check the space input for validity and that space
 		# against the board
-		if not (space[0] in columns and space[1] in rows):
+		if not (str(space[0]) in columns and int(space[1:]) in rows):
 			self.error = "-----INVALID SPACE-----"
 			return False
 		else:

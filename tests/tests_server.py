@@ -2,7 +2,7 @@
 import server
 import client
 import socket
-from server import GocoreServer
+from server import Server
 from client import Client
 from board import Board
 from random import randint
